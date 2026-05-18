@@ -1,0 +1,81 @@
+@model IEnumerable<ECommerceApp.Models.Product>
+@{
+    ViewData["Title"] = "Manage Products";
+    Layout = "_AdminLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0">All Products</h4>
+    <a asp-controller="Products" asp-action="Create" class="btn btn-success btn-sm">
+        <i class="fas fa-plus me-1"></i> Add New Product
+    </a>
+</div>
+
+<!-- Search -->
+<form asp-action="Products" method="get" class="mb-3 d-flex gap-2">
+    <input type="text" name="search" value="@ViewBag.Search" class="form-control"
+           placeholder="Search products..." style="max-width:300px" />
+    <button type="submit" class="btn btn-outline-primary">Search</button>
+    <a asp-action="Products" class="btn btn-outline-secondary">Reset</a>
+</form>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var product in Model)
+                {
+                    <tr class="@(!product.IsActive ? "table-secondary" : "")">
+                        <td>
+                            <img src="@product.ImageUrl" style="width:50px;height:50px;object-fit:cover;border-radius:8px"
+                                 onerror="this.src='https://placehold.co/50x50?text=?'" />
+                        </td>
+                        <td><strong>@product.Name</strong></td>
+                        <td><span class="badge bg-light text-dark">@product.Category?.Name</span></td>
+                        <td>$@product.Price.ToString("F2")</td>
+                        <td>
+                            <form asp-action="UpdateStock" method="post" class="d-flex gap-1 align-items-center">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@product.Id" />
+                                <input type="number" name="stock" value="@product.StockQuantity" min="0"
+                                       class="form-control form-control-sm @(product.StockQuantity < 10 ? "border-danger" : "")"
+                                       style="width:75px" />
+                                <button type="submit" class="btn btn-outline-secondary btn-sm">✓</button>
+                            </form>
+                        </td>
+                        <td>
+                            <span class="badge @(product.IsActive ? "bg-success" : "bg-secondary")">
+                                @(product.IsActive ? "Active" : "Hidden")
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a asp-controller="Products" asp-action="Edit" asp-route-id="@product.Id"
+                                   class="btn btn-warning btn-sm">Edit</a>
+                                <form asp-action="ToggleProduct" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@product.Id" />
+                                    <button type="submit"
+                                            class="btn btn-sm @(product.IsActive ? "btn-outline-danger" : "btn-outline-success")">
+                                        @(product.IsActive ? "Hide" : "Show")
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

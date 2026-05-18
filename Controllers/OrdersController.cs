@@ -1,0 +1,143 @@
+using ECommerceApp.Models;
+using ECommerceApp.Services;
+using ECommerceApp.ViewModels;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+
+namespace ECommerceApp.Controllers;
+
+[Authorize]
+public class OrdersController : Controller
+{
+    private readonly IOrderService _orderService;
+    private readonly ICartService _cartService;
+    private readonly IPaymentService _paymentService;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private const string CartSessionKey = "CartSessionId";
+
+    public OrdersController(
+        IOrderService orderService,
+        ICartService cartService,
+        IPaymentService paymentService,
+        UserManager<ApplicationUser> userManager)
+    {
+        _orderService = orderService;
+        _cartService = cartService;
+        _paymentService = paymentService;
+        _userManager = userManager;
+    }
+
+    private string UserId =>
+        User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value;
+
+    private string GetSessionCartId() =>
+        HttpContext.Session.GetString(CartSessionKey) ?? "";
+
+    // GET /Orders
+    public async Task<IActionResult> Index()
+    {
+        var orders = await _orderService.GetUserOrdersAsync(UserId);
+        return View(orders);
+    }
+
+    // GET /Orders/Details/5
+    public async Task<IActionResult> Details(int id)
+    {
+        var order = await _orderService.GetOrderByIdAsync(id, UserId);
+        if (order is null) return NotFound();
+        return View(order);
+    }
+
+    // GET /Orders/Checkout
+    public async Task<IActionResult> Checkout()
+    {
+        var cart = await _cartService.GetCartAsync(UserId, GetSessionCartId());
+        if (!cart.CartItems.Any()) return RedirectToAction("Index", "Cart");
+
+        var vm = new CheckoutViewModel
+        {
+            Cart = cart,
+            TotalAmount = cart.TotalPrice
+        };
+        return View(vm);
+    }
+
+    // POST /Orders/Checkout
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> Checkout(CheckoutViewModel vm)
+    {
+        if (!ModelState.IsValid)
+        {
+            vm.Cart = await _cartService.GetCartAsync(UserId, GetSessionCartId());
+            return View(vm);
+        }
+
+        TempData["ShippingAddress"] = vm.ShippingAddress;
+        TempData["City"] = vm.City;
+        TempData["PostalCode"] = vm.PostalCode;
+        TempData["Country"] = vm.Country;
+        TempData["PhoneNumber"] = vm.PhoneNumber;
+
+        var cart = await _cartService.GetCartAsync(UserId, GetSessionCartId());
+        var user = await _userManager.GetUserAsync(User);
+        var items = cart.CartItems
+            .Select(i => (i.Product!.Name, i.UnitPrice, i.Quantity))
+            .ToList();
+
+        var successUrl = Url.Action("PaymentSuccess", "Orders", null, Request.Scheme)!;
+        var cancelUrl = Url.Action("Checkout", "Orders", null, Request.Scheme)!;
+
+        try
+        {
+            var stripeUrl = await _paymentService.CreateCheckoutSessionAsync(
+                items, successUrl, cancelUrl, user!.Email!);
+            return Redirect(stripeUrl);
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError("", "Payment setup failed: " + ex.Message);
+            vm.Cart = cart;
+            return View(vm);
+        }
+    }
+
+    // GET /Orders/PaymentSuccess?session_id=xxx
+    public async Task<IActionResult> PaymentSuccess(string session_id)
+    {
+        var paid = await _paymentService.VerifyPaymentAsync(session_id);
+        if (!paid)
+        {
+            TempData["Error"] = "Payment was not completed. Please try again.";
+            return RedirectToAction("Checkout");
+        }
+
+        var vm = new CheckoutViewModel
+        {
+            ShippingAddress = TempData["ShippingAddress"]?.ToString() ?? "",
+            City = TempData["City"]?.ToString() ?? "",
+            PostalCode = TempData["PostalCode"]?.ToString() ?? "",
+            Country = TempData["Country"]?.ToString() ?? "",
+            PhoneNumber = TempData["PhoneNumber"]?.ToString() ?? "",
+        };
+
+        try
+        {
+            var order = await _orderService.PlaceOrderAsync(UserId, vm);
+            TempData["Success"] = $"Payment successful! Order #{order.Id} confirmed.";
+            return RedirectToAction(nameof(Details), new { id = order.Id });
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = ex.Message;
+            return RedirectToAction("Index", "Cart");
+        }
+    }
+
+    // GET /Orders/PaymentCancelled
+    public IActionResult PaymentCancelled()
+    {
+        TempData["Error"] = "Payment was cancelled. Your cart is still saved.";
+        return RedirectToAction("Index", "Cart");
+    }
+}

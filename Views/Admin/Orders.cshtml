@@ -1,0 +1,66 @@
+@model IEnumerable<ECommerceApp.Models.Order>
+@{
+    ViewData["Title"] = "Manage Orders";
+    Layout = "_AdminLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0">All Orders</h4>
+    <div class="btn-group">
+        <a asp-action="Orders" class="btn btn-sm @(ViewBag.CurrentStatus == null ? "btn-dark" : "btn-outline-dark")">All</a>
+        @foreach (var status in Enum.GetValues<ECommerceApp.Models.OrderStatus>())
+        {
+            <a asp-action="Orders" asp-route-status="@status"
+               class="btn btn-sm @(ViewBag.CurrentStatus == status.ToString() ? "btn-dark" : "btn-outline-dark")">
+                @status
+            </a>
+        }
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>Order #</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Items</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Model)
+                {
+                    <tr>
+                        <td><strong>#@order.Id</strong></td>
+                        <td>@(order.User?.Email ?? "—")</td>
+                        <td>@order.OrderDate.ToString("MMM dd, yyyy")</td>
+                        <td>@order.OrderItems.Count item(s)</td>
+                        <td><strong>$@order.TotalAmount.ToString("F2")</strong></td>
+                        <td>
+                            <span class="badge @(order.Status switch {
+                                ECommerceApp.Models.OrderStatus.Delivered  => "bg-success",
+                                ECommerceApp.Models.OrderStatus.Shipped    => "bg-primary",
+                                ECommerceApp.Models.OrderStatus.Processing => "bg-warning text-dark",
+                                ECommerceApp.Models.OrderStatus.Cancelled  => "bg-danger",
+                                _ => "bg-secondary"
+                            })">@order.Status</span>
+                        </td>
+                        <td>
+                            <a asp-action="OrderDetails" asp-route-id="@order.Id"
+                               class="btn btn-sm btn-outline-primary">Manage</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        @if (!Model.Any())
+        {
+            <div class="text-center py-4 text-muted">No orders found.</div>
+        }
+    </div>
+</div>

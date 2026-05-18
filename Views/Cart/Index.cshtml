@@ -1,0 +1,88 @@
+@model ECommerceApp.ViewModels.CartViewModel
+@{
+    ViewData["Title"] = "My Cart";
+    var cart = Model.Cart;
+}
+
+<h2><i class="fas fa-shopping-cart me-2"></i>My Cart</h2>
+
+@if (!cart.CartItems.Any())
+{
+    <div class="alert alert-info">
+        Your cart is empty. <a asp-controller="Products" asp-action="Index">Continue shopping</a>
+    </div>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-8">
+            <table class="table align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Product</th>
+                        <th>Price</th>
+                        <th>Qty</th>
+                        <th>Subtotal</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in cart.CartItems)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@item.Product?.Name</strong>
+                            </td>
+                            <td>$@item.UnitPrice.ToString("F2")</td>
+                            <td>
+                                <form asp-action="Update" method="post" class="d-inline">
+                                    <input type="hidden" name="cartItemId" value="@item.Id" />
+                                    @Html.AntiForgeryToken()
+                                    <input type="number" name="quantity" value="@item.Quantity" min="1"
+                                           class="form-control d-inline" style="width:70px"
+                                           onchange="this.form.submit()" />
+                                </form>
+                            </td>
+                            <td>$@item.SubTotal.ToString("F2")</td>
+                            <td>
+                                <form asp-action="Remove" method="post" class="d-inline">
+                                    <input type="hidden" name="cartItemId" value="@item.Id" />
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Order Summary</h5>
+                    <hr />
+                    <div class="d-flex justify-content-between">
+                        <span>Items (@cart.TotalItems)</span>
+                        <span>$@cart.TotalPrice.ToString("F2")</span>
+                    </div>
+                    <hr />
+                    <div class="d-flex justify-content-between fw-bold fs-5">
+                        <span>Total</span>
+                        <span class="text-success">$@cart.TotalPrice.ToString("F2")</span>
+                    </div>
+                    <a asp-controller="Orders" asp-action="Checkout"
+                       class="btn btn-success w-100 mt-3">
+                        <i class="fas fa-credit-card me-1"></i> Proceed to Checkout
+                    </a>
+                    <a asp-controller="Products" asp-action="Index"
+                       class="btn btn-outline-secondary w-100 mt-2">
+                        Continue Shopping
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+}

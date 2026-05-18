@@ -1,0 +1,65 @@
+@model IEnumerable<ECommerceApp.ViewModels.AdminUserItem>
+@{
+    ViewData["Title"] = "Manage Users";
+    Layout = "_AdminLayout";
+}
+
+<h4 class="fw-bold mb-4">All Users</h4>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Email</th>
+                    <th>Name</th>
+                    <th>Roles</th>
+                    <th>Orders</th>
+                    <th>Total Spent</th>
+                    <th>Joined</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.User.Email</td>
+                        <td>@(item.User.FullName.Length > 0 ? item.User.FullName : "—")</td>
+                        <td>
+                            @foreach (var role in item.Roles)
+                            {
+                                <span class="badge @(role == "Admin" ? "bg-danger" : "bg-primary") me-1">@role</span>
+                            }
+                        </td>
+                        <td>@item.OrderCount</td>
+                        <td>$@item.TotalSpent.ToString("F2")</td>
+                        <td>@item.User.CreatedAt.ToString("MMM dd, yyyy")</td>
+                        <td>
+                            <form asp-action="ToggleRole" method="post" class="d-flex gap-1">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="userId" value="@item.User.Id" />
+                                @if (item.Roles.Contains("Admin"))
+                                {
+                                    <input type="hidden" name="role" value="Admin" />
+                                    <button type="submit" class="btn btn-danger btn-sm"
+                                            onclick="return confirm('Remove Admin role?')">
+                                        Remove Admin
+                                    </button>
+                                }
+                                else
+                                {
+                                    <input type="hidden" name="role" value="Admin" />
+                                    <button type="submit" class="btn btn-outline-danger btn-sm"
+                                            onclick="return confirm('Make this user Admin?')">
+                                        Make Admin
+                                    </button>
+                                }
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

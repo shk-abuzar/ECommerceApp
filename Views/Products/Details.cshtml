@@ -1,0 +1,48 @@
+@model ECommerceApp.ViewModels.ProductDetailViewModel
+@{
+    ViewData["Title"] = Model.Product.Name;
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+        <li class="breadcrumb-item"><a asp-controller="Products" asp-action="Index">Products</a></li>
+        <li class="breadcrumb-item active">@Model.Product.Name</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-5">
+        <img src="@Model.Product.ImageUrl" class="img-fluid rounded shadow" alt="@Model.Product.Name"
+             onerror="this.src='/images/no-image.png'" />
+    </div>
+    <div class="col-md-7">
+        <span class="badge bg-secondary mb-2">@Model.Product.Category?.Name</span>
+        <h2>@Model.Product.Name</h2>
+        <p class="text-muted">@Model.Product.Description</p>
+        <h3 class="text-success">$@Model.Product.Price.ToString("F2")</h3>
+        <p class="@(Model.Product.StockQuantity > 0 ? "text-success" : "text-danger")">
+            @(Model.Product.StockQuantity > 0 ? $"✓ In Stock ({Model.Product.StockQuantity} available)" : "✗ Out of Stock")
+        </p>
+
+        @if (Model.Product.StockQuantity > 0)
+        {
+            <form asp-controller="Cart" asp-action="Add" method="post">
+                <input type="hidden" name="productId" value="@Model.Product.Id" />
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <label class="form-label mb-0">Qty:</label>
+                    <input type="number" name="quantity" value="1" min="1"
+                           max="@Model.Product.StockQuantity" class="form-control" style="width:80px" />
+                </div>
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-cart-plus me-1"></i> Add to Cart
+                </button>
+            </form>
+        }
+
+        <a asp-action="Index" class="btn btn-outline-secondary mt-3">
+            <i class="fas fa-arrow-left me-1"></i> Back to Products
+        </a>
+    </div>
+</div>
