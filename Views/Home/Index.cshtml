@@ -1,59 +1,170 @@
-﻿
-@model IEnumerable<ECommerceApp.Models.Product>
+﻿@model IEnumerable<ECommerceApp.Models.Product>
 @{
     ViewData["Title"] = "Home";
 }
 
-<!-- Hero Banner -->
-<div class="p-5 mb-4 bg-dark text-white rounded-3">
-    <div class="container-fluid py-3">
-        <h1 class="display-5 fw-bold">Welcome to ShopNet 🛍️</h1>
-        <p class="col-md-8 fs-4">Discover thousands of products at unbeatable prices.</p>
-        <a class="btn btn-primary btn-lg" asp-controller="Products" asp-action="Index">
-            Shop Now <i class="fas fa-arrow-right ms-1"></i>
-        </a>
-    </div>
-</div>
-
-<!-- Featured Products -->
-<h2 class="mb-4">Featured Products</h2>
-
-@if (!Model.Any())
-{
-    <div class="alert alert-info">No products available yet. Check back soon!</div>
-}
-else
-{
-    <div class="row row-cols-1 row-cols-md-4 g-4">
-        @foreach (var product in Model)
-        {
-            <div class="col">
-                <div class="card h-100 shadow-sm">
-                    <img src="@product.ImageUrl"
-                         class="card-img-top"
-                         alt="@product.Name"
-                         style="height:200px; object-fit:cover;"
-                         onerror="this.src='https://placehold.co/400x200?text=No+Image'" />
-                    <div class="card-body d-flex flex-column">
-                        <span class="badge bg-secondary mb-1">@product.Category?.Name</span>
-                        <h5 class="card-title">@product.Name</h5>
-                        <p class="card-text text-muted small flex-grow-1">
-                            @(product.Description.Length > 80
-                                ? product.Description[..80] + "…"
-                                : product.Description)
-                        </p>
-                        <div class="d-flex justify-content-between align-items-center mt-2">
-                            <span class="fw-bold text-success fs-5">
-                                $@product.Price.ToString("F2")
-                            </span>
-                            <a asp-controller="Products"
-                               asp-action="Details"
-                               asp-route-id="@product.Id"
-                               class="btn btn-outline-primary btn-sm">View</a>
-                        </div>
+<!-- HERO SECTION -->
+<section class="hero">
+    <div class="hero-grid">
+        <div class="hero-main">
+            <div class="hero-image-wrap">
+                <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&q=80" alt="Hero" />
+                <div class="hero-overlay">
+                    <div class="hero-text">
+                        <span class="hero-season">SUMMER 2025</span>
+                        <h1 class="hero-title">NEW<br>ARRIVALS</h1>
+                        <a href="/Products" class="btn-primary">SHOP NOW</a>
                     </div>
                 </div>
             </div>
+        </div>
+        <div class="hero-side">
+            <div class="hero-side-top">
+                <img src="https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600&q=80" alt="Collection" />
+                <div class="hero-side-label">
+                    <span>MENS COLLECTION</span>
+                    <a href="#">EXPLORE →</a>
+                </div>
+            </div>
+            <div class="hero-side-bottom">
+                <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&q=80" alt="Womens" />
+                <div class="hero-side-label">
+                    <span>WOMENS COLLECTION</span>
+                    <a href="#">EXPLORE →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- MARQUEE TICKER -->
+<div class="ticker-wrap">
+    <div class="ticker">
+        <span>FREE SHIPPING OVER $150</span>
+        <span class="ticker-dot">◆</span>
+        <span>NEW ARRIVALS EVERY FRIDAY</span>
+        <span class="ticker-dot">◆</span>
+        <span>EXCLUSIVE MEMBERS-ONLY DROPS</span>
+        <span class="ticker-dot">◆</span>
+        <span>FREE RETURNS WITHIN 30 DAYS</span>
+        <span class="ticker-dot">◆</span>
+        <span>FREE SHIPPING OVER $150</span>
+        <span class="ticker-dot">◆</span>
+        <span>NEW ARRIVALS EVERY FRIDAY</span>
+        <span class="ticker-dot">◆</span>
+        <span>EXCLUSIVE MEMBERS-ONLY DROPS</span>
+        <span class="ticker-dot">◆</span>
+        <span>FREE RETURNS WITHIN 30 DAYS</span>
+        <span class="ticker-dot">◆</span>
+    </div>
+</div>
+
+<!-- FEATURED PRODUCTS GRID -->
+<section class="featured-section">
+    <div class="section-header">
+        <h2 class="section-title">FEATURED</h2>
+        <a href="/Products" class="section-link">VIEW ALL →</a>
+    </div>
+
+    <div class="product-grid">
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var product in Model)
+            {
+                <div class="product-card">
+                    <div class="product-image-wrap">
+                        @if (!string.IsNullOrEmpty(product.ImageUrl))
+                        {
+                            <img src="@product.ImageUrl" alt="@product.Name" loading="lazy" />
+                        }
+                        else
+                        {
+                            <div class="product-image-placeholder"></div>
+                        }
+                        <button class="product-cart-btn" title="Add to cart">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                                <line x1="3" y1="6" x2="21" y2="6" />
+                                <path d="M16 10a4 4 0 0 1-8 0" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="product-info">
+                        <span class="product-category">@product.Category?.Name</span>
+                        <h3 class="product-name">
+                            <a href="/Products/Details/@product.Id">@product.Name</a>
+                        </h3>
+                        <span class="product-price">$@product.Price.ToString("F2")</span>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            @for (int i = 0; i < 4; i++)
+            {
+                <div class="product-card">
+                    <div class="product-image-wrap">
+                        <div class="product-image-placeholder"></div>
+                    </div>
+                    <div class="product-info">
+                        <span class="product-category">CATEGORY</span>
+                        <h3 class="product-name">Product Name</h3>
+                        <span class="product-price">$99.00</span>
+                    </div>
+                </div>
+            }
         }
     </div>
-}
+</section>
+
+<!-- EDITORIAL BANNER -->
+<section class="editorial-banner">
+    <div class="editorial-inner">
+        <img src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=1400&q=80" alt="Editorial" />
+        <div class="editorial-content">
+            <span class="editorial-tag">EDITORIAL</span>
+            <h2>THE SUMMER<br><em>LOOKBOOK</em></h2>
+            <p>Discover our curated selection of essential pieces for the season ahead.</p>
+            <a href="/Products" class="btn-outline">EXPLORE THE COLLECTION</a>
+        </div>
+    </div>
+</section>
+
+<!-- CATEGORY ROW -->
+<section class="category-strip">
+    <div class="section-header">
+        <h2 class="section-title">SHOP BY CATEGORY</h2>
+    </div>
+    <div class="category-grid">
+        <a href="/Products?categoryId=1" class="category-card">
+            <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&q=80" alt="Electronics" />
+            <span>ELECTRONICS</span>
+        </a>
+        <a href="/Products?categoryId=2" class="category-card">
+            <img src="https://images.unsplash.com/photo-1467043237213-65f2da53396f?w=400&q=80" alt="Clothing" />
+            <span>CLOTHING</span>
+        </a>
+        <a href="/Products?categoryId=3" class="category-card">
+            <img src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=80" alt="Books" />
+            <span>BOOKS</span>
+        </a>
+        <a href="/Products?categoryId=4" class="category-card">
+            <img src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&q=80" alt="Home" />
+            <span>HOME & GARDEN</span>
+        </a>
+    </div>
+</section>
+
+<!-- NEWSLETTER -->
+<section class="newsletter-section">
+    <div class="newsletter-inner">
+        <span class="newsletter-tag">STAY IN THE LOOP</span>
+        <h2>JOIN THE COMMUNITY</h2>
+        <p>Get early access to drops, exclusive offers, and editorial content.</p>
+        <form class="newsletter-form" onsubmit="return false;">
+            <input type="email" placeholder="YOUR EMAIL ADDRESS" />
+            <button type="submit">SUBSCRIBE</button>
+        </form>
+    </div>
+</section>
