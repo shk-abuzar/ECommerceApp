@@ -46,6 +46,15 @@ public class ProductsController : Controller
         return View(new ProductDetailViewModel { Product = product });
     }
 
+    // ── Stock API (used by live polling on Details page) ──────────────────────
+    [HttpGet]
+    public async Task<IActionResult> GetStock(int id)
+    {
+        var product = await _productService.GetByIdAsync(id);
+        if (product is null) return NotFound();
+        return Json(new { stock = product.StockQuantity });
+    }
+
     // ── Admin: Create ─────────────────────────────────────────────────────────
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create()
