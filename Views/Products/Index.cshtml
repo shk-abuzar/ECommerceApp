@@ -2,7 +2,9 @@
 @{
     ViewData["Title"] = "Products";
 }
+
 <div class="row">
+    <!-- Sidebar Filter -->
     <div class="col-md-3">
         <div class="card mb-3">
             <div class="card-body">
@@ -27,9 +29,20 @@
             </div>
         </div>
     </div>
+
+    <!-- Product Grid -->
     <div class="col-md-9">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4>Products <span class="badge bg-secondary">@Model.Products.Count()</span></h4>
+            <h4>
+                Products
+                <span class="badge bg-secondary">@Model.TotalCount</span>
+                @if (Model.TotalPages > 1)
+                {
+                    <small class="text-muted fs-6 ms-2">
+                        Page @Model.CurrentPage of @Model.TotalPages
+                    </small>
+                }
+            </h4>
             @if (User.IsInRole("Admin"))
             {
                 <a asp-action="Create" class="btn btn-success btn-sm">
@@ -37,6 +50,7 @@
                 </a>
             }
         </div>
+
         @if (!Model.Products.Any())
         {
             <div class="alert alert-info">No products found.</div>
@@ -55,7 +69,9 @@
                                 <span class="badge bg-light text-dark mb-1">@product.Category?.Name</span>
                                 <h6 class="card-title">@product.Name</h6>
                                 <p class="text-muted small flex-grow-1">
-                                    @(product.Description.Length > 70 ? product.Description[..70] + "…" : product.Description)
+                                    @(product.Description.Length > 70
+                                        ? product.Description[..70] + "…"
+                                        : product.Description)
                                 </p>
                                 <div class="d-flex justify-content-between align-items-center mt-2">
                                     <span class="text-success fw-bold">$@product.Price.ToString("F2")</span>
@@ -73,6 +89,61 @@
                     </div>
                 }
             </div>
+
+            <!-- Pagination Controls -->
+            @if (Model.TotalPages > 1)
+            {
+                <nav class="mt-4" aria-label="Product pages">
+                    <ul class="pagination justify-content-center">
+
+                        <!-- Previous -->
+                        <li class="page-item @(!Model.HasPreviousPage ? "disabled" : "")">
+                            <a class="page-link"
+                               asp-action="Index"
+                               asp-route-page="@(Model.CurrentPage - 1)"
+                               asp-route-search="@Model.Search"
+                               asp-route-categoryId="@Model.CategoryId">
+                                ← Prev
+                            </a>
+                        </li>
+
+                        <!-- Page numbers -->
+                        @for (int i = 1; i <= Model.TotalPages; i++)
+                        {
+                            @if (i == 1 || i == Model.TotalPages
+                                || (i >= Model.CurrentPage - 2 && i <= Model.CurrentPage + 2))
+                            {
+                                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                    <a class="page-link"
+                                       asp-action="Index"
+                                       asp-route-page="@i"
+                                       asp-route-search="@Model.Search"
+                                       asp-route-categoryId="@Model.CategoryId">@i</a>
+                                </li>
+                            }
+                            else if (i == Model.CurrentPage - 3 || i == Model.CurrentPage + 3)
+                            {
+                                <li class="page-item disabled"><span class="page-link">…</span></li>
+                            }
+                        }
+
+                        <!-- Next -->
+                        <li class="page-item @(!Model.HasNextPage ? "disabled" : "")">
+                            <a class="page-link"
+                               asp-action="Index"
+                               asp-route-page="@(Model.CurrentPage + 1)"
+                               asp-route-search="@Model.Search"
+                               asp-route-categoryId="@Model.CategoryId">
+                                Next →
+                            </a>
+                        </li>
+
+                    </ul>
+                </nav>
+                <p class="text-center text-muted small">
+                    Showing @((Model.CurrentPage - 1) * Model.PageSize + 1)–@(Math.Min(Model.CurrentPage * Model.PageSize, Model.TotalCount)) of @Model.TotalCount products
+                </p>
+            }
         }
     </div>
 </div>

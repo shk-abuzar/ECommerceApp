@@ -10,7 +10,9 @@ public class ProductService : IProductService
 
     public ProductService(ApplicationDbContext db) => _db = db;
 
-    public async Task<IEnumerable<Product>> GetAllAsync(string? search = null, int? categoryId = null)
+    public async Task<(IEnumerable<Product> Products, int TotalCount)>
+        GetAllAsync(string? search = null, int? categoryId = null,
+                    int page = 1, int pageSize = 12)
     {
         var query = _db.Products
             .Include(p => p.Category)
@@ -18,12 +20,21 @@ public class ProductService : IProductService
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(search))
-            query = query.Where(p => p.Name.Contains(search) || p.Description.Contains(search));
+            query = query.Where(p =>
+                p.Name.Contains(search) || p.Description.Contains(search));
 
         if (categoryId.HasValue)
             query = query.Where(p => p.CategoryId == categoryId.Value);
 
-        return await query.OrderBy(p => p.Name).ToListAsync();
+        var totalCount = await query.CountAsync();
+
+        var products = await query
+            .OrderBy(p => p.Name)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (products, totalCount);
     }
 
     public async Task<Product?> GetByIdAsync(int id) =>

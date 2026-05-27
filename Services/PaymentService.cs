@@ -9,7 +9,16 @@ public class PaymentService : IPaymentService
     public PaymentService(IConfiguration config)
     {
         _config = config;
-        Stripe.StripeConfiguration.ApiKey = _config["Stripe:SecretKey"];
+
+        var secretKey = _config["Stripe:SecretKey"];
+
+        if (string.IsNullOrWhiteSpace(secretKey) || secretKey.Contains("REPLACE") || secretKey.Contains("YOUR_"))
+            throw new InvalidOperationException(
+                "Stripe SecretKey is not configured. " +
+                "Add your key to appsettings.json (Stripe:SecretKey) " +
+                "or use 'dotnet user-secrets set Stripe:SecretKey sk_test_...'");
+
+        Stripe.StripeConfiguration.ApiKey = secretKey;
     }
 
     public async Task<string> CreateCheckoutSessionAsync(
@@ -22,8 +31,8 @@ public class PaymentService : IPaymentService
         {
             PriceData = new SessionLineItemPriceDataOptions
             {
-                UnitAmount  = (long)(item.Price * 100),
-                Currency    = "usd",
+                UnitAmount = (long)(item.Price * 100),
+                Currency = "usd",
                 ProductData = new SessionLineItemPriceDataProductDataOptions
                 {
                     Name = item.Name,
@@ -35,11 +44,11 @@ public class PaymentService : IPaymentService
         var options = new SessionCreateOptions
         {
             PaymentMethodTypes = new List<string> { "card" },
-            LineItems          = lineItems,
-            Mode               = "payment",
-            SuccessUrl         = successUrl + "?session_id={CHECKOUT_SESSION_ID}",
-            CancelUrl          = cancelUrl,
-            CustomerEmail      = customerEmail,
+            LineItems = lineItems,
+            Mode = "payment",
+            SuccessUrl = successUrl + "?session_id={CHECKOUT_SESSION_ID}",
+            CancelUrl = cancelUrl,
+            CustomerEmail = customerEmail,
         };
 
         var service = new SessionService();

@@ -1,0 +1,23 @@
+@using ECommerceApp.Models
+@model IEnumerable<Category>
+
+@if (ViewBag.Mobile == true)
+{
+    @foreach (var cat in Model)
+    {
+        <a asp-controller="Products" asp-action="Index" asp-route-categoryId="@cat.Id">
+            @cat.Name.ToUpper()
+        </a>
+    }
+}
+else
+{
+    @foreach (var cat in Model)
+    {
+        <li>
+            <a asp-controller="Products" asp-action="Index" asp-route-categoryId="@cat.Id">
+                @cat.Name.ToUpper()
+            </a>
+        </li>
+    }
+}

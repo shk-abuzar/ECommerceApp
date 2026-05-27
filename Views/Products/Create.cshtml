@@ -1,0 +1,149 @@
+@model ECommerceApp.Models.Product
+@{
+    ViewData["Title"] = "Add New Product";
+    Layout = "_AdminLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold mb-0">Add New Product</h4>
+    <a asp-action="Products" asp-controller="Admin" class="btn btn-outline-secondary btn-sm">
+        ← Back to Products
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <form asp-action="Create" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3"></div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <label asp-for="Name" class="form-label fw-semibold"></label>
+                            <input asp-for="Name" class="form-control" placeholder="e.g. Wireless Headphones" />
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="CategoryId" class="form-label fw-semibold">Category</label>
+                            <select asp-for="CategoryId" class="form-select"
+                                    asp-items="@(new SelectList(ViewBag.Categories, "Id", "Name"))">
+                                <option value="">— Select category —</option>
+                            </select>
+                            <span asp-validation-for="CategoryId" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label fw-semibold"></label>
+                        <textarea asp-for="Description" class="form-control" rows="4"
+                                  placeholder="Describe the product..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label asp-for="Price" class="form-label fw-semibold"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input asp-for="Price" class="form-control" placeholder="0.00" />
+                            </div>
+                            <span asp-validation-for="Price" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="StockQuantity" class="form-label fw-semibold"></label>
+                            <input asp-for="StockQuantity" class="form-control" placeholder="0" />
+                            <span asp-validation-for="StockQuantity" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Status</label>
+                            <div class="form-check form-switch mt-2">
+                                <input asp-for="IsActive" class="form-check-input" role="switch" />
+                                <label asp-for="IsActive" class="form-check-label">Active</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- IMAGE SECTION -->
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Product Image</label>
+
+                        <!-- Tab toggle -->
+                        <div class="btn-group btn-group-sm mb-2" role="group">
+                            <input type="radio" class="btn-check" name="imageInputMode"
+                                   id="modeUpload" value="upload" checked />
+                            <label class="btn btn-outline-primary" for="modeUpload">Upload File</label>
+
+                            <input type="radio" class="btn-check" name="imageInputMode"
+                                   id="modeUrl" value="url" />
+                            <label class="btn btn-outline-primary" for="modeUrl">Paste URL</label>
+                        </div>
+
+                        <!-- File upload input -->
+                        <div id="uploadSection">
+                            <input type="file" name="imageFile" id="imageFile"
+                                   class="form-control" accept="image/*"
+                                   onchange="previewUpload(this)" />
+                            <div class="form-text">JPG, PNG, WebP — max 5 MB.</div>
+                        </div>
+
+                        <!-- URL input -->
+                        <div id="urlSection" style="display:none">
+                            <input asp-for="ImageUrl" class="form-control"
+                                   placeholder="https://example.com/image.jpg"
+                                   oninput="document.getElementById('img-preview').src = this.value || '/images/no-image.png'" />
+                            <div class="form-text">Paste a direct image URL.</div>
+                        </div>
+
+                        <span asp-validation-for="ImageUrl" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success px-4">
+                            ＋ Create Product
+                        </button>
+                        <a asp-controller="Admin" asp-action="Products" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Preview -->
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center p-4">
+                <p class="text-muted small mb-2 fw-semibold">IMAGE PREVIEW</p>
+                <img id="img-preview" src="/images/no-image.png"
+                     style="width:100%;height:220px;object-fit:cover;border-radius:8px;background:#f5f5f5"
+                     onerror="this.src='https://placehold.co/300x220?text=No+Image'" />
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Toggle upload / url sections
+        document.querySelectorAll('input[name="imageInputMode"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                const isUpload = radio.value === 'upload';
+                document.getElementById('uploadSection').style.display = isUpload ? '' : 'none';
+                document.getElementById('urlSection').style.display    = isUpload ? 'none' : '';
+            });
+        });
+
+        // Preview selected file
+        function previewUpload(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => document.getElementById('img-preview').src = e.target.result;
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+}

@@ -4,6 +4,7 @@ using ECommerceApp.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace ECommerceApp.Controllers;
 
@@ -15,6 +16,7 @@ public class OrdersController : Controller
     private readonly IPaymentService _paymentService;
     private readonly UserManager<ApplicationUser> _userManager;
     private const string CartSessionKey = "CartSessionId";
+    private const string ShippingSessionKey = "PendingShipping"; // ← FIX #05
 
     public OrdersController(
         IOrderService orderService,
@@ -49,6 +51,24 @@ public class OrdersController : Controller
         return View(order);
     }
 
+    // POST /Orders/Cancel/5
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> Cancel(int id)
+    {
+        var order = await _orderService.GetOrderByIdAsync(id, UserId);
+        if (order is null) return NotFound();
+
+        if (order.Status != OrderStatus.Pending && order.Status != OrderStatus.Processing)
+        {
+            TempData["Error"] = $"Order #{id} cannot be cancelled — it is already {order.Status}.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        await _orderService.UpdateStatusAsync(id, OrderStatus.Cancelled);
+        TempData["Success"] = $"Order #{id} has been cancelled.";
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
     // GET /Orders/Checkout
     public async Task<IActionResult> Checkout()
     {
@@ -73,11 +93,16 @@ public class OrdersController : Controller
             return View(vm);
         }
 
-        TempData["ShippingAddress"] = vm.ShippingAddress;
-        TempData["City"] = vm.City;
-        TempData["PostalCode"] = vm.PostalCode;
-        TempData["Country"] = vm.Country;
-        TempData["PhoneNumber"] = vm.PhoneNumber;
+        // ── FIX #05: store shipping in Session (survives Stripe redirect) ──
+        var shippingData = JsonSerializer.Serialize(new
+        {
+            vm.ShippingAddress,
+            vm.City,
+            vm.PostalCode,
+            vm.Country,
+            vm.PhoneNumber
+        });
+        HttpContext.Session.SetString(ShippingSessionKey, shippingData);
 
         var cart = await _cartService.GetCartAsync(UserId, GetSessionCartId());
         var user = await _userManager.GetUserAsync(User);
@@ -112,13 +137,24 @@ public class OrdersController : Controller
             return RedirectToAction("Checkout");
         }
 
+        // ── FIX #05: read shipping from Session instead of TempData ──
+        var shippingJson = HttpContext.Session.GetString(ShippingSessionKey);
+        if (string.IsNullOrEmpty(shippingJson))
+        {
+            TempData["Error"] = "Shipping information was lost. Please contact support with your payment reference.";
+            return RedirectToAction("Index", "Cart");
+        }
+
+        var shipping = JsonSerializer.Deserialize<ShippingData>(shippingJson)!;
+        HttpContext.Session.Remove(ShippingSessionKey); // clean up
+
         var vm = new CheckoutViewModel
         {
-            ShippingAddress = TempData["ShippingAddress"]?.ToString() ?? "",
-            City = TempData["City"]?.ToString() ?? "",
-            PostalCode = TempData["PostalCode"]?.ToString() ?? "",
-            Country = TempData["Country"]?.ToString() ?? "",
-            PhoneNumber = TempData["PhoneNumber"]?.ToString() ?? "",
+            ShippingAddress = shipping.ShippingAddress,
+            City = shipping.City,
+            PostalCode = shipping.PostalCode,
+            Country = shipping.Country,
+            PhoneNumber = shipping.PhoneNumber,
         };
 
         try
@@ -140,4 +176,12 @@ public class OrdersController : Controller
         TempData["Error"] = "Payment was cancelled. Your cart is still saved.";
         return RedirectToAction("Index", "Cart");
     }
+
+    // Private helper record for deserializing shipping session data
+    private record ShippingData(
+        string ShippingAddress,
+        string City,
+        string PostalCode,
+        string Country,
+        string PhoneNumber);
 }

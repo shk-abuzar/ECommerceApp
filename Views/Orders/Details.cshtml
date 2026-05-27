@@ -1,17 +1,20 @@
 @model ECommerceApp.Models.Order
 @{
     ViewData["Title"] = $"Order #{Model.Id}";
+    bool canCancel = Model.Status == ECommerceApp.Models.OrderStatus.Pending
+                  || Model.Status == ECommerceApp.Models.OrderStatus.Processing;
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2><i class="fas fa-box me-2"></i>Order #@Model.Id</h2>
-    <span class="badge fs-6 @(Model.Status switch {
-        ECommerceApp.Models.OrderStatus.Delivered  => "bg-success",
-        ECommerceApp.Models.OrderStatus.Shipped    => "bg-primary",
-        ECommerceApp.Models.OrderStatus.Processing => "bg-warning text-dark",
-        ECommerceApp.Models.OrderStatus.Cancelled  => "bg-danger",
-        _ => "bg-secondary"
-    })">@Model.Status</span>
+    <span class="badge fs-6 @(Model.Status switch
+          {
+              ECommerceApp.Models.OrderStatus.Delivered => "bg-success",
+              ECommerceApp.Models.OrderStatus.Shipped => "bg-primary",
+              ECommerceApp.Models.OrderStatus.Processing => "bg-warning text-dark",
+              ECommerceApp.Models.OrderStatus.Cancelled => "bg-danger",
+              _ => "bg-secondary"
+          })">@Model.Status</span>
 </div>
 
 <div class="row">
@@ -49,6 +52,27 @@
                 </table>
             </div>
         </div>
+
+        <!-- Cancel button — only for Pending or Processing orders -->
+        @if (canCancel)
+        {
+            <div class="card border-danger mb-3">
+                <div class="card-body">
+                    <h6 class="text-danger mb-1">Cancel this order?</h6>
+                    <p class="text-muted small mb-3">
+                        You can cancel while the order is Pending or Processing.
+                        Once shipped, cancellation is no longer available.
+                    </p>
+                    <form asp-action="Cancel" asp-route-id="@Model.Id" method="post"
+                          onsubmit="return confirm('Are you sure you want to cancel Order #@Model.Id?')">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                            Cancel Order
+                        </button>
+                    </form>
+                </div>
+            </div>
+        }
     </div>
 
     <!-- Shipping Info -->

@@ -1,6 +1,7 @@
 using ECommerceApp.Data;
 using ECommerceApp.Models;
 using ECommerceApp.Services;
+using ECommerceApp.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -20,9 +21,9 @@ public class AdminController : Controller
         IProductService productService,
         UserManager<ApplicationUser> userManager)
     {
-        _db             = db;
+        _db = db;
         _productService = productService;
-        _userManager    = userManager;
+        _userManager = userManager;
     }
 
     // ── Dashboard ─────────────────────────────────────────────────────────────
@@ -30,25 +31,25 @@ public class AdminController : Controller
     {
         var stats = new AdminDashboardViewModel
         {
-            TotalProducts  = await _db.Products.CountAsync(p => p.IsActive),
-            TotalOrders    = await _db.Orders.CountAsync(),
-            TotalUsers     = await _db.Users.CountAsync(),
-            TotalRevenue   = await _db.Orders.SumAsync(o => (decimal?)o.TotalAmount) ?? 0,
-            PendingOrders  = await _db.Orders.CountAsync(o => o.Status == OrderStatus.Pending),
-            LowStockCount  = await _db.Products.CountAsync(p => p.IsActive && p.StockQuantity < 10),
-            RecentOrders   = await _db.Orders
+            TotalProducts = await _db.Products.CountAsync(p => p.IsActive),
+            TotalOrders = await _db.Orders.CountAsync(),
+            TotalUsers = await _db.Users.CountAsync(),
+            TotalRevenue = await _db.Orders.SumAsync(o => (decimal?)o.TotalAmount) ?? 0,
+            PendingOrders = await _db.Orders.CountAsync(o => o.Status == OrderStatus.Pending),
+            LowStockCount = await _db.Products.CountAsync(p => p.IsActive && p.StockQuantity < 10),
+            RecentOrders = await _db.Orders
                                 .Include(o => o.User)
                                 .OrderByDescending(o => o.OrderDate)
                                 .Take(5)
                                 .ToListAsync(),
-            TopProducts    = await _db.OrderItems
+            TopProducts = await _db.OrderItems
                                 .Include(oi => oi.Product)
                                 .GroupBy(oi => oi.Product!.Name)
                                 .Select(g => new TopProductItem
                                 {
-                                    Name     = g.Key,
+                                    Name = g.Key,
                                     Quantity = g.Sum(x => x.Quantity),
-                                    Revenue  = g.Sum(x => x.UnitPrice * x.Quantity)
+                                    Revenue = g.Sum(x => x.UnitPrice * x.Quantity)
                                 })
                                 .OrderByDescending(x => x.Revenue)
                                 .Take(5)
@@ -58,7 +59,7 @@ public class AdminController : Controller
                                 .Select(g => new OrderStatusCount
                                 {
                                     Status = g.Key,
-                                    Count  = g.Count()
+                                    Count = g.Count()
                                 })
                                 .ToListAsync()
         };
@@ -151,16 +152,16 @@ public class AdminController : Controller
         var userList = new List<AdminUserItem>();
         foreach (var user in users)
         {
-            var roles        = await _userManager.GetRolesAsync(user);
-            var orderCount   = await _db.Orders.CountAsync(o => o.UserId == user.Id);
-            var totalSpent   = await _db.Orders
+            var roles = await _userManager.GetRolesAsync(user);
+            var orderCount = await _db.Orders.CountAsync(o => o.UserId == user.Id);
+            var totalSpent = await _db.Orders
                 .Where(o => o.UserId == user.Id)
                 .SumAsync(o => (decimal?)o.TotalAmount) ?? 0;
 
             userList.Add(new AdminUserItem
             {
-                User       = user,
-                Roles      = roles.ToList(),
+                User = user,
+                Roles = roles.ToList(),
                 OrderCount = orderCount,
                 TotalSpent = totalSpent
             });
@@ -227,39 +228,4 @@ public class AdminController : Controller
         }
         return RedirectToAction(nameof(Categories));
     }
-}
-
-// ── ViewModels ────────────────────────────────────────────────────────────────
-public class AdminDashboardViewModel
-{
-    public int     TotalProducts  { get; set; }
-    public int     TotalOrders    { get; set; }
-    public int     TotalUsers     { get; set; }
-    public decimal TotalRevenue   { get; set; }
-    public int     PendingOrders  { get; set; }
-    public int     LowStockCount  { get; set; }
-    public List<ECommerceApp.Models.Order>  RecentOrders   { get; set; } = new();
-    public List<TopProductItem>             TopProducts    { get; set; } = new();
-    public List<OrderStatusCount>           OrdersByStatus { get; set; } = new();
-}
-
-public class TopProductItem
-{
-    public string  Name     { get; set; } = string.Empty;
-    public int     Quantity { get; set; }
-    public decimal Revenue  { get; set; }
-}
-
-public class OrderStatusCount
-{
-    public ECommerceApp.Models.OrderStatus Status { get; set; }
-    public int Count { get; set; }
-}
-
-public class AdminUserItem
-{
-    public ECommerceApp.Models.ApplicationUser User       { get; set; } = null!;
-    public List<string>                        Roles      { get; set; } = new();
-    public int                                 OrderCount { get; set; }
-    public decimal                             TotalSpent { get; set; }
 }

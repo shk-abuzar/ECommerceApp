@@ -22,40 +22,52 @@
         <nav class="nav-container">
             <!-- Left Nav Links -->
             <ul class="nav-links nav-left">
-                <li><a asp-page="/Products/Index">NEW</a></li>
-                <li class="has-dropdown">
-                    <a href="#">MENS</a>
-                </li>
-                <li class="has-dropdown">
-                    <a href="#">WOMENS</a>
-                </li>
-                <li><a href="#">KIDS</a></li>
+                <li><a asp-controller="Products" asp-action="Index">ALL</a></li>
+                @await Component.InvokeAsync("NavCategories")
             </ul>
 
             <!-- Center Logo -->
-            <a asp-page="/Index" class="site-logo">SHOPNET</a>
+            <a asp-controller="Home" asp-action="Index" class="site-logo">SHOPNET</a>
 
             <!-- Right Nav -->
             <ul class="nav-links nav-right">
-                <li><a href="#">COLLECTIONS</a></li>
+                <li><a asp-controller="Products" asp-action="Index">COLLECTIONS</a></li>
+
+                <!-- Account icon: shows My Account if logged in, Login if not -->
                 <li class="nav-icon-link">
-                    <a asp-page="/Account/Login" title="Account">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                            <circle cx="12" cy="7" r="4" />
-                        </svg>
-                    </a>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <a asp-area="" asp-controller="Orders" asp-action="Index" title="My Orders">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
+                            </svg>
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-area="Identity" asp-page="/Account/Login" title="Login">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
+                            </svg>
+                        </a>
+                    }
                 </li>
+
+                <!-- Search icon -->
                 <li class="nav-icon-link">
-                    <a href="#" title="Search">
+                    <a asp-controller="Products" asp-action="Index" title="Search">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                             <circle cx="11" cy="11" r="8" />
                             <line x1="21" y1="21" x2="16.65" y2="16.65" />
                         </svg>
                     </a>
                 </li>
+
+                <!-- Cart icon -->
                 <li class="nav-icon-link cart-link">
-                    <a asp-page="/Cart/Index" title="Cart">
+                    <a asp-controller="Cart" asp-action="Index" title="Cart">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                             <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
                             <line x1="3" y1="6" x2="21" y2="6" />
@@ -73,8 +85,8 @@
         <button class="mobile-menu-btn" id="mobileMenuBtn">
             <span></span><span></span><span></span>
         </button>
-        <a asp-page="/Index" class="site-logo">SHOPNET</a>
-        <a asp-page="/Cart/Index" class="mobile-cart">
+        <a asp-controller="Home" asp-action="Index" class="site-logo">SHOPNET</a>
+        <a asp-controller="Cart" asp-action="Index" class="mobile-cart">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                 <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
                 <line x1="3" y1="6" x2="21" y2="6" />
@@ -85,13 +97,38 @@
 
     <!-- MOBILE MENU -->
     <div class="mobile-menu" id="mobileMenu">
-        <a href="#">NEW</a>
-        <a href="#">MENS</a>
-        <a href="#">WOMENS</a>
-        <a href="#">KIDS</a>
-        <a href="#">COLLECTIONS</a>
-        <a asp-page="/Account/Login">ACCOUNT</a>
+        <a asp-controller="Products" asp-action="Index">ALL PRODUCTS</a>
+        @await Component.InvokeAsync("NavCategories", new { mobile = true })
+        <a asp-controller="Products" asp-action="Index">COLLECTIONS</a>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <a asp-controller="Orders" asp-action="Index">MY ORDERS</a>
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-controller="Admin" asp-action="Index">ADMIN</a>
+            }
+            <a asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="/">LOGOUT</a>
+        }
+        else
+        {
+            <a asp-area="Identity" asp-page="/Account/Login">LOGIN</a>
+            <a asp-area="Identity" asp-page="/Account/Register">REGISTER</a>
+        }
     </div>
+
+    <!-- GLOBAL ALERTS -->
+    @if (TempData["Success"] != null)
+    {
+        <div style="background:#f0f9f0;border-bottom:1px solid #4caf50;color:#2e7d32;padding:12px 40px;font-family:'Montserrat',sans-serif;font-size:13px;letter-spacing:0.05em;">
+            ✓ @TempData["Success"]
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div style="background:#fff0f0;border-bottom:1px solid #e57373;color:#c62828;padding:12px 40px;font-family:'Montserrat',sans-serif;font-size:13px;letter-spacing:0.05em;">
+            ✗ @TempData["Error"]
+        </div>
+    }
 
     <!-- PAGE CONTENT -->
     <main>
@@ -107,11 +144,11 @@
             </div>
             <div class="footer-col">
                 <h4>SHOP</h4>
-                <a href="#">New Arrivals</a>
-                <a href="#">Mens</a>
-                <a href="#">Womens</a>
-                <a href="#">Kids</a>
-                <a href="#">Sale</a>
+                <a asp-controller="Products" asp-action="Index">All Products</a>
+                <a asp-controller="Products" asp-action="Index" asp-route-categoryId="1">Electronics</a>
+                <a asp-controller="Products" asp-action="Index" asp-route-categoryId="2">Clothing</a>
+                <a asp-controller="Products" asp-action="Index" asp-route-categoryId="3">Books</a>
+                <a asp-controller="Products" asp-action="Index" asp-route-categoryId="4">Home & Garden</a>
             </div>
             <div class="footer-col">
                 <h4>HELP</h4>
@@ -150,6 +187,19 @@
         document.getElementById('mobileMenuBtn')?.addEventListener('click', () => {
         document.getElementById('mobileMenu').classList.toggle('open');
         });
+
+        // Live cart count badge
+        (async () => {
+        try {
+        const res  = await fetch('/Cart/Count');
+        const data = await res.json();
+        const badge = document.getElementById('cart-count');
+        if (badge) {
+        badge.textContent = data.count;
+        badge.style.display = data.count > 0 ? 'flex' : 'none';
+        }
+        } catch { /* fail silently — badge stays at 0 */ }
+        })();
     </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

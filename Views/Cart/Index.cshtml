@@ -4,85 +4,408 @@
     var cart = Model.Cart;
 }
 
-<h2><i class="fas fa-shopping-cart me-2"></i>My Cart</h2>
-
-@if (!cart.CartItems.Any())
-{
-    <div class="alert alert-info">
-        Your cart is empty. <a asp-controller="Products" asp-action="Index">Continue shopping</a>
+<section class="cart-section">
+    <div class="cart-header">
+        <h1 class="section-title">YOUR CART</h1>
+        <a asp-controller="Products" asp-action="Index" class="section-link">← CONTINUE SHOPPING</a>
     </div>
-}
-else
-{
-    <div class="row">
-        <div class="col-md-8">
-            <table class="table align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>Product</th>
-                        <th>Price</th>
-                        <th>Qty</th>
-                        <th>Subtotal</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in cart.CartItems)
-                    {
-                        <tr>
-                            <td>
-                                <strong>@item.Product?.Name</strong>
-                            </td>
-                            <td>$@item.UnitPrice.ToString("F2")</td>
-                            <td>
-                                <form asp-action="Update" method="post" class="d-inline">
-                                    <input type="hidden" name="cartItemId" value="@item.Id" />
-                                    @Html.AntiForgeryToken()
-                                    <input type="number" name="quantity" value="@item.Quantity" min="1"
-                                           class="form-control d-inline" style="width:70px"
-                                           onchange="this.form.submit()" />
-                                </form>
-                            </td>
-                            <td>$@item.SubTotal.ToString("F2")</td>
-                            <td>
-                                <form asp-action="Remove" method="post" class="d-inline">
-                                    <input type="hidden" name="cartItemId" value="@item.Id" />
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
 
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5>Order Summary</h5>
-                    <hr />
-                    <div class="d-flex justify-content-between">
-                        <span>Items (@cart.TotalItems)</span>
-                        <span>$@cart.TotalPrice.ToString("F2")</span>
-                    </div>
-                    <hr />
-                    <div class="d-flex justify-content-between fw-bold fs-5">
-                        <span>Total</span>
-                        <span class="text-success">$@cart.TotalPrice.ToString("F2")</span>
-                    </div>
-                    <a asp-controller="Orders" asp-action="Checkout"
-                       class="btn btn-success w-100 mt-3">
-                        <i class="fas fa-credit-card me-1"></i> Proceed to Checkout
-                    </a>
-                    <a asp-controller="Products" asp-action="Index"
-                       class="btn btn-outline-secondary w-100 mt-2">
-                        Continue Shopping
-                    </a>
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert-success">@TempData["Success"]</div>
+    }
+
+    @if (!cart.CartItems.Any())
+    {
+        <div class="cart-empty">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <path d="M16 10a4 4 0 0 1-8 0" />
+            </svg>
+            <p>Your cart is empty.</p>
+            <a asp-controller="Products" asp-action="Index" class="btn-primary">SHOP NOW</a>
+        </div>
+    }
+    else
+    {
+        <div class="cart-layout">
+            <!-- CART ITEMS -->
+            <div class="cart-items">
+                <div class="cart-items-header">
+                    <span>PRODUCT</span>
+                    <span>PRICE</span>
+                    <span>QTY</span>
+                    <span>TOTAL</span>
+                    <span></span>
                 </div>
+
+                @foreach (var item in cart.CartItems)
+                {
+                    <div class="cart-item">
+                        <div class="cart-item-product">
+                            @if (item.Product?.ImageUrl != null)
+                            {
+                                <img src="@item.Product.ImageUrl" alt="@item.Product?.Name" class="cart-item-img" />
+                            }
+                            else
+                            {
+                                <div class="cart-item-img-placeholder"></div>
+                            }
+                            <div class="cart-item-details">
+                                <span class="cart-item-name">@item.Product?.Name</span>
+                                <span class="cart-item-cat">@item.Product?.Category?.Name</span>
+                            </div>
+                        </div>
+
+                        <span class="cart-item-price">$@item.UnitPrice.ToString("F2")</span>
+
+                        <form asp-controller="Cart" asp-action="Update" method="post" class="cart-qty-form">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="cartItemId" value="@item.Id" />
+                            <div class="qty-control">
+                                <button type="button" class="qty-btn qty-minus">−</button>
+                                <input type="number" name="quantity" value="@item.Quantity" min="1"
+                                       class="qty-input" onchange="this.form.submit()" />
+                                <button type="button" class="qty-btn qty-plus">+</button>
+                            </div>
+                        </form>
+
+                        <span class="cart-item-subtotal">$@item.SubTotal.ToString("F2")</span>
+
+                        <form asp-controller="Cart" asp-action="Remove" method="post" class="cart-remove-form">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="cartItemId" value="@item.Id" />
+                            <button type="submit" class="cart-remove-btn" title="Remove item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <line x1="18" y1="6" x2="6" y2="18" />
+                                    <line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+                }
+            </div>
+
+            <!-- ORDER SUMMARY -->
+            <div class="cart-summary">
+                <h2 class="cart-summary-title">ORDER SUMMARY</h2>
+                <div class="cart-summary-row">
+                    <span>Subtotal (@cart.TotalItems @(cart.TotalItems == 1 ? "item" : "items"))</span>
+                    <span>$@cart.TotalPrice.ToString("F2")</span>
+                </div>
+                <div class="cart-summary-row">
+                    <span>Shipping</span>
+                    <span>@(cart.TotalPrice >= 150 ? "FREE" : "$9.99")</span>
+                </div>
+                <div class="cart-summary-divider"></div>
+                <div class="cart-summary-row cart-summary-total">
+                    <span>TOTAL</span>
+                    <span>$@((cart.TotalPrice >= 150 ? cart.TotalPrice : cart.TotalPrice + 9.99m).ToString("F2"))</span>
+                </div>
+
+                @if (cart.TotalPrice < 150)
+                {
+                    <p class="cart-free-shipping-note">
+                        Add $@((150 - cart.TotalPrice).ToString("F2")) more for free shipping!
+                    </p>
+                }
+
+                <a asp-controller="Orders" asp-action="Checkout" class="btn-primary cart-checkout-btn">
+                    PROCEED TO CHECKOUT
+                </a>
+                <a asp-controller="Products" asp-action="Index" class="btn-outline cart-continue-btn">
+                    CONTINUE SHOPPING
+                </a>
             </div>
         </div>
-    </div>
+    }
+</section>
+
+@section Styles {
+    <style>
+        .cart-section {
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 0 40px;
+        }
+
+        .cart-header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            margin-bottom: 48px;
+            border-bottom: 1px solid #000;
+            padding-bottom: 16px;
+        }
+
+        .alert-success {
+            background: #f0f9f0;
+            border: 1px solid #4caf50;
+            color: #2e7d32;
+            padding: 12px 20px;
+            margin-bottom: 24px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 13px;
+            letter-spacing: 0.05em;
+        }
+
+        .cart-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            padding: 80px 0;
+            text-align: center;
+            color: #999;
+        }
+
+            .cart-empty p {
+                font-family: 'Montserrat', sans-serif;
+                font-size: 14px;
+                letter-spacing: 0.1em;
+                text-transform: uppercase;
+            }
+
+        .cart-layout {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 60px;
+            align-items: start;
+        }
+
+        .cart-items-header {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 40px;
+            gap: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #eee;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            color: #999;
+        }
+
+        .cart-item {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 40px;
+            gap: 16px;
+            align-items: center;
+            padding: 24px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .cart-item-product {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .cart-item-img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            background: #f5f5f5;
+        }
+
+        .cart-item-img-placeholder {
+            width: 80px;
+            height: 80px;
+            background: #f5f5f5;
+            flex-shrink: 0;
+        }
+
+        .cart-item-details {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .cart-item-name {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+
+        .cart-item-cat {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 11px;
+            color: #999;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .cart-item-price,
+        .cart-item-subtotal {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .cart-item-subtotal {
+            font-weight: 600;
+        }
+
+        .qty-control {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ddd;
+            width: fit-content;
+        }
+
+        .qty-btn {
+            width: 32px;
+            height: 36px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+            .qty-btn:hover {
+                background: #f5f5f5;
+            }
+
+        .qty-input {
+            width: 44px;
+            height: 36px;
+            border: none;
+            border-left: 1px solid #ddd;
+            border-right: 1px solid #ddd;
+            text-align: center;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 13px;
+            -moz-appearance: textfield;
+        }
+
+            .qty-input::-webkit-outer-spin-button,
+            .qty-input::-webkit-inner-spin-button {
+                -webkit-appearance: none;
+            }
+
+        .cart-remove-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #999;
+            padding: 4px;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+            .cart-remove-btn:hover {
+                color: #000;
+            }
+        /* Summary */
+        .cart-summary {
+            background: #fafafa;
+            padding: 32px;
+            border: 1px solid #eee;
+            position: sticky;
+            top: 100px;
+        }
+
+        .cart-summary-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 22px;
+            letter-spacing: 0.15em;
+            margin-bottom: 24px;
+        }
+
+        .cart-summary-row {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 13px;
+            margin-bottom: 12px;
+            color: #555;
+        }
+
+        .cart-summary-divider {
+            border-top: 1px solid #ddd;
+            margin: 16px 0;
+        }
+
+        .cart-summary-total {
+            font-size: 15px;
+            font-weight: 700;
+            color: #000;
+        }
+
+        .cart-free-shipping-note {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 11px;
+            color: #888;
+            text-align: center;
+            margin: 8px 0 16px;
+            letter-spacing: 0.05em;
+        }
+
+        .cart-checkout-btn {
+            display: block;
+            width: 100%;
+            text-align: center;
+            margin-top: 24px;
+            padding: 16px;
+            font-size: 13px;
+        }
+
+        .cart-continue-btn {
+            display: block;
+            width: 100%;
+            text-align: center;
+            margin-top: 12px;
+            padding: 14px;
+            font-size: 12px;
+        }
+        @@media (max-width: 900px) {
+            .cart-section {
+                padding: 0 20px;
+            }
+
+            .cart-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .cart-items-header {
+                display: none;
+            }
+
+            .cart-item {
+                grid-template-columns: 1fr;
+                gap: 12px;
+                position: relative;
+                padding-right: 40px;
+            }
+
+            .cart-remove-form {
+                position: absolute;
+                top: 24px;
+                right: 0;
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // Qty +/- buttons
+        document.querySelectorAll('.qty-control').forEach(ctrl => {
+            const input = ctrl.querySelector('.qty-input');
+            ctrl.querySelector('.qty-minus')?.addEventListener('click', () => {
+                if (parseInt(input.value) > 1) { input.value--; input.form.submit(); }
+            });
+            ctrl.querySelector('.qty-plus')?.addEventListener('click', () => {
+                input.value++; input.form.submit();
+            });
+        });
+    </script>
 }

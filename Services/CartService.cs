@@ -28,18 +28,33 @@ public class CartService : ICartService
 
     public async Task AddItemAsync(string? userId, string? sessionId, int productId, int qty)
     {
-        var cart    = await GetOrCreateCartAsync(userId, sessionId);
+        var cart = await GetOrCreateCartAsync(userId, sessionId);
         var product = await _db.Products.FindAsync(productId)
-                      ?? throw new Exception("Product not found");
+                      ?? throw new Exception("Product not found.");
 
+        if (!product.IsActive)
+            throw new Exception($"'{product.Name}' is no longer available.");
+
+        // Work out how many the customer already has in cart
         var existing = cart.CartItems.FirstOrDefault(ci => ci.ProductId == productId);
+        var alreadyInCart = existing?.Quantity ?? 0;
+        var totalWanted = alreadyInCart + qty;
+
+        if (totalWanted > product.StockQuantity)
+        {
+            var available = product.StockQuantity - alreadyInCart;
+            if (available <= 0)
+                throw new Exception($"'{product.Name}' is already at maximum stock in your cart ({product.StockQuantity} available).");
+            throw new Exception($"Only {available} more unit(s) of '{product.Name}' can be added (stock: {product.StockQuantity}).");
+        }
+
         if (existing is not null)
             existing.Quantity += qty;
         else
             cart.CartItems.Add(new CartItem
             {
                 ProductId = productId,
-                Quantity  = qty,
+                Quantity = qty,
                 UnitPrice = product.Price
             });
 
@@ -53,8 +68,19 @@ public class CartService : ICartService
         var item = cart.CartItems.FirstOrDefault(ci => ci.Id == cartItemId);
         if (item is null) return;
 
-        if (qty <= 0) _db.CartItems.Remove(item);
-        else item.Quantity = qty;
+        if (qty <= 0)
+        {
+            _db.CartItems.Remove(item);
+        }
+        else
+        {
+            // Check stock before updating quantity
+            var product = await _db.Products.FindAsync(item.ProductId);
+            if (product is not null && qty > product.StockQuantity)
+                throw new Exception($"Only {product.StockQuantity} unit(s) of '{product.Name}' are in stock.");
+
+            item.Quantity = qty;
+        }
 
         await _db.SaveChangesAsync();
     }
@@ -96,7 +122,7 @@ public class CartService : ICartService
                 userCart.CartItems.Add(new CartItem
                 {
                     ProductId = item.ProductId,
-                    Quantity  = item.Quantity,
+                    Quantity = item.Quantity,
                     UnitPrice = item.UnitPrice
                 });
         }
