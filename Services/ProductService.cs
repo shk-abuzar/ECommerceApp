@@ -49,9 +49,19 @@ public class ProductService : IProductService
 
     public async Task<Product> UpdateAsync(Product product)
     {
-        _db.Products.Update(product);
+        var existing = await _db.Products.FindAsync(product.Id);
+        if (existing is null) throw new InvalidOperationException("Product not found.");
+
+        existing.Name = product.Name;
+        existing.Description = product.Description;
+        existing.Price = product.Price;
+        existing.StockQuantity = product.StockQuantity;
+        existing.CategoryId = product.CategoryId;
+        existing.ImageUrl = product.ImageUrl;
+        existing.IsActive = product.IsActive;
+
         await _db.SaveChangesAsync();
-        return product;
+        return existing;
     }
 
     public async Task DeleteAsync(int id)
