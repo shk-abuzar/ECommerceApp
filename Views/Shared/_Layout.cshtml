@@ -22,6 +22,7 @@
         <nav class="nav-container">
             <!-- Left Nav Links -->
             <ul class="nav-links nav-left">
+                <li><a asp-controller="Home" asp-action="Index">HOME</a></li>
                 <li><a asp-controller="Products" asp-action="Index">ALL</a></li>
                 @await Component.InvokeAsync("NavCategories")
             </ul>
@@ -97,6 +98,7 @@
 
     <!-- MOBILE MENU -->
     <div class="mobile-menu" id="mobileMenu">
+        <a asp-controller="Home" asp-action="Index">HOME</a>
         <a asp-controller="Products" asp-action="Index">ALL PRODUCTS</a>
         @await Component.InvokeAsync("NavCategories", new { mobile = true })
         <a asp-controller="Products" asp-action="Index">COLLECTIONS</a>
