@@ -1074,3 +1074,639 @@ main {
         grid-template-columns: 1fr;
     }
 }
+
+/* ============================================================
+   HOME PAGE — Complete Styles
+   ============================================================ */
+
+/* ── Hero Section ─────────────────────────────────────────── */
+.hero {
+    margin: -40px -32px 0;
+    overflow: hidden;
+}
+
+.hero-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    height: 88vh;
+    min-height: 520px;
+    max-height: 820px;
+}
+
+.hero-main {
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-image-wrap {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+    .hero-image-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform 6s ease;
+    }
+
+    .hero-image-wrap:hover img {
+        transform: scale(1.03);
+    }
+
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.1) 50%, transparent 100%);
+    display: flex;
+    align-items: flex-end;
+    padding: 48px 52px;
+}
+
+.hero-text {
+    color: #fff;
+}
+
+.hero-season {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    margin-bottom: 10px;
+    opacity: 0.85;
+}
+
+.hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(52px, 7vw, 96px);
+    line-height: 0.92;
+    letter-spacing: 0.04em;
+    margin-bottom: 28px;
+}
+
+.hero-text .btn-primary {
+    background: #fff;
+    color: #1a1a1a;
+    border-color: #fff;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    padding: 12px 28px;
+    border-radius: 0;
+}
+
+    .hero-text .btn-primary:hover {
+        background: transparent;
+        color: #fff;
+        border-color: #fff;
+    }
+
+.hero-side {
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #e8e8e8;
+}
+
+.hero-side-top,
+.hero-side-bottom {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-side-top {
+    border-bottom: 1px solid #e8e8e8;
+}
+
+    .hero-side-top img,
+    .hero-side-bottom img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform 5s ease;
+    }
+
+    .hero-side-top:hover img,
+    .hero-side-bottom:hover img {
+        transform: scale(1.05);
+    }
+
+.hero-side-label {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 16px 20px;
+    background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+    .hero-side-label span {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.16em;
+    }
+
+    .hero-side-label a {
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: 0.12em;
+        color: #fff;
+        opacity: 0.85;
+        transition: opacity 0.2s;
+    }
+
+        .hero-side-label a:hover {
+            opacity: 1;
+        }
+
+/* ── Ticker / Marquee ─────────────────────────────────────── */
+.ticker-wrap {
+    overflow: hidden;
+    background: #1a1a1a;
+    color: #fff;
+    padding: 11px 0;
+    margin: 0 -32px;
+}
+
+.ticker {
+    display: flex;
+    gap: 0;
+    width: max-content;
+    animation: ticker-scroll 28s linear infinite;
+}
+
+    .ticker span {
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: 0.16em;
+        white-space: nowrap;
+        padding: 0 28px;
+    }
+
+.ticker-dot {
+    color: #888;
+    padding: 0 !important;
+}
+
+@keyframes ticker-scroll {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+/* ── Section Header ───────────────────────────────────────── */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 28px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 0.1em;
+    color: #1a1a1a;
+}
+
+.section-link {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    color: #1a1a1a;
+    transition: color 0.2s;
+}
+
+    .section-link:hover {
+        color: #888;
+    }
+
+/* ── Featured Products Grid ───────────────────────────────── */
+.featured-section {
+    padding: 64px 0 48px;
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+}
+
+.product-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.product-image-wrap {
+    position: relative;
+    overflow: hidden;
+    background: #f5f5f5;
+    aspect-ratio: 3 / 4;
+    margin-bottom: 14px;
+}
+
+    .product-image-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.5s ease;
+    }
+
+.product-card:hover .product-image-wrap img {
+    transform: scale(1.04);
+}
+
+.product-image-placeholder {
+    width: 100%;
+    height: 100%;
+    background: #efefef;
+}
+
+.product-cart-btn {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    width: 40px;
+    height: 40px;
+    background: #fff;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.25s, transform 0.25s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    color: #1a1a1a;
+}
+
+.product-card:hover .product-cart-btn {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.product-cart-btn:hover {
+    background: #1a1a1a;
+    color: #fff;
+}
+
+.product-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.product-category {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    color: #999;
+}
+
+.product-name {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1.4;
+}
+
+    .product-name a {
+        color: #1a1a1a;
+        transition: color 0.2s;
+    }
+
+        .product-name a:hover {
+            color: #888;
+        }
+
+.product-price {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-top: 2px;
+}
+
+/* ── Editorial Banner ─────────────────────────────────────── */
+.editorial-banner {
+    margin: 16px -32px 0;
+    overflow: hidden;
+}
+
+.editorial-inner {
+    position: relative;
+    height: 520px;
+}
+
+    .editorial-inner img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+.editorial-content {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to right, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.2) 60%, transparent 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 80px;
+    color: #fff;
+}
+
+.editorial-tag {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    opacity: 0.7;
+    margin-bottom: 16px;
+    display: block;
+}
+
+.editorial-content h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(44px, 6vw, 80px);
+    line-height: 0.95;
+    letter-spacing: 0.04em;
+    margin-bottom: 18px;
+}
+
+    .editorial-content h2 em {
+        font-style: italic;
+        font-family: Georgia, serif;
+        letter-spacing: 0.02em;
+    }
+
+.editorial-content p {
+    font-size: 14px;
+    color: rgba(255,255,255,0.8);
+    max-width: 340px;
+    line-height: 1.7;
+    margin-bottom: 32px;
+}
+
+.btn-outline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    padding: 13px 32px;
+    border: 1.5px solid #fff;
+    color: #fff;
+    background: transparent;
+    text-decoration: none;
+    transition: all 0.25s;
+    width: fit-content;
+}
+
+    .btn-outline:hover {
+        background: #fff;
+        color: #1a1a1a;
+    }
+
+/* ── Category Strip ───────────────────────────────────────── */
+.category-strip {
+    padding: 72px 0 48px;
+}
+
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.category-card {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 1 / 1.1;
+    display: block;
+    text-decoration: none;
+}
+
+    .category-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.5s ease;
+        filter: brightness(0.82);
+    }
+
+    .category-card:hover img {
+        transform: scale(1.06);
+        filter: brightness(0.72);
+    }
+
+    .category-card span {
+        position: absolute;
+        bottom: 20px;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        color: #fff;
+    }
+
+/* ── Newsletter Section ───────────────────────────────────── */
+.newsletter-section {
+    background: #f5f5f5;
+    margin: 0 -32px;
+    padding: 80px 32px;
+    text-align: center;
+}
+
+.newsletter-inner {
+    max-width: 520px;
+    margin: 0 auto;
+}
+
+.newsletter-tag {
+    display: block;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    color: #999;
+    margin-bottom: 14px;
+}
+
+.newsletter-inner h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 44px;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+}
+
+.newsletter-inner p {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.7;
+    margin-bottom: 32px;
+}
+
+.newsletter-form {
+    display: flex;
+    gap: 0;
+    max-width: 420px;
+    margin: 0 auto;
+}
+
+    .newsletter-form input {
+        flex: 1;
+        padding: 13px 16px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        border: 1.5px solid #1a1a1a;
+        border-right: none;
+        background: #fff;
+        outline: none;
+    }
+
+    .newsletter-form button {
+        padding: 13px 24px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        background: #1a1a1a;
+        color: #fff;
+        border: 1.5px solid #1a1a1a;
+        cursor: pointer;
+        transition: background 0.2s;
+        white-space: nowrap;
+    }
+
+        .newsletter-form button:hover {
+            background: #333;
+        }
+
+/* ── Home Responsive ──────────────────────────────────────── */
+@media (max-width: 1100px) {
+    .product-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .hero-grid {
+        grid-template-columns: 1fr;
+        height: auto;
+        max-height: none;
+    }
+
+    .hero-main {
+        height: 60vw;
+        min-height: 320px;
+    }
+
+    .hero-side {
+        flex-direction: row;
+        height: 220px;
+        border-left: none;
+        border-top: 1px solid #e8e8e8;
+    }
+
+    .hero-side-top {
+        border-bottom: none;
+        border-right: 1px solid #e8e8e8;
+    }
+
+    .category-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .editorial-content {
+        padding: 0 40px;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero {
+        margin: -24px -16px 0;
+    }
+
+    .ticker-wrap {
+        margin: 0 -16px;
+    }
+
+    .editorial-banner {
+        margin: 16px -16px 0;
+    }
+
+    .newsletter-section {
+        margin: 0 -16px;
+        padding: 60px 20px;
+    }
+
+    .hero-overlay {
+        padding: 32px 28px;
+    }
+
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+
+    .editorial-inner {
+        height: 380px;
+    }
+
+    .editorial-content {
+        padding: 0 28px;
+    }
+
+        .editorial-content h2 {
+            font-size: 40px;
+        }
+
+    .newsletter-form {
+        flex-direction: column;
+        gap: 0;
+    }
+
+        .newsletter-form input {
+            border-right: 1.5px solid #1a1a1a;
+            border-bottom: none;
+        }
+
+        .newsletter-form button {
+            width: 100%;
+        }
+}
+
+@media (max-width: 480px) {
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .category-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .hero-side {
+        height: 160px;
+    }
+}
