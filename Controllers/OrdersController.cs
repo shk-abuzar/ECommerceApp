@@ -90,6 +90,7 @@ public class OrdersController : Controller
         if (!ModelState.IsValid)
         {
             vm.Cart = await _cartService.GetCartAsync(UserId, GetSessionCartId());
+            vm.TotalAmount = vm.Cart.TotalPrice; // ← FIX: repopulate total for button display
             return View(vm);
         }
 
@@ -123,6 +124,7 @@ public class OrdersController : Controller
         {
             ModelState.AddModelError("", "Payment setup failed: " + ex.Message);
             vm.Cart = cart;
+            vm.TotalAmount = cart.TotalPrice; // ← FIX: repopulate so button shows correct total
             return View(vm);
         }
     }
