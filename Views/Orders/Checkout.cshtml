@@ -3,76 +3,78 @@
     ViewData["Title"] = "Checkout";
 }
 
-<h2><i class="fas fa-credit-card me-2"></i>Checkout</h2>
+<div class="checkout-page">
+    <h2 class="checkout-title"><i class="fas fa-credit-card me-2"></i>Checkout</h2>
 
-<div class="row">
-    <!-- Shipping Form -->
-    <div class="col-md-7">
-        <div class="card mb-3">
-            <div class="card-header"><strong>Shipping Information</strong></div>
-            <div class="card-body">
-                <form asp-action="Checkout" method="post">
-                    @Html.AntiForgeryToken()
-                    <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+    <div class="checkout-grid">
+        <!-- Shipping Form -->
+        <div class="checkout-form-col">
+            <div class="card">
+                <div class="card-header"><strong>Shipping Information</strong></div>
+                <div class="card-body">
+                    <form asp-action="Checkout" method="post">
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
 
-                    <div class="mb-3">
-                        <label asp-for="ShippingAddress" class="form-label"></label>
-                        <textarea asp-for="ShippingAddress" class="form-control" rows="2"></textarea>
-                        <span asp-validation-for="ShippingAddress" class="text-danger"></span>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label asp-for="City" class="form-label"></label>
-                            <input asp-for="City" class="form-control" />
-                            <span asp-validation-for="City" class="text-danger"></span>
+                        <div class="mb-3">
+                            <label asp-for="ShippingAddress" class="form-label"></label>
+                            <textarea asp-for="ShippingAddress" class="form-control" rows="2"></textarea>
+                            <span asp-validation-for="ShippingAddress" class="text-danger"></span>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label asp-for="PostalCode" class="form-label"></label>
-                            <input asp-for="PostalCode" class="form-control" />
-                            <span asp-validation-for="PostalCode" class="text-danger"></span>
-                        </div>
-                    </div>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label asp-for="Country" class="form-label"></label>
-                            <input asp-for="Country" class="form-control" />
+                        <div class="checkout-row-2col">
+                            <div class="mb-3">
+                                <label asp-for="City" class="form-label"></label>
+                                <input asp-for="City" class="form-control" />
+                                <span asp-validation-for="City" class="text-danger"></span>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="PostalCode" class="form-label"></label>
+                                <input asp-for="PostalCode" class="form-control" />
+                                <span asp-validation-for="PostalCode" class="text-danger"></span>
+                            </div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label asp-for="PhoneNumber" class="form-label"></label>
-                            <input asp-for="PhoneNumber" class="form-control" />
-                        </div>
-                    </div>
 
-                    <button type="submit" class="btn btn-success w-100">
-                        <i class="fas fa-check-circle me-1"></i> Place Order — $@Model.TotalAmount.ToString("F2")
-                    </button>
-                </form>
+                        <div class="checkout-row-2col">
+                            <div class="mb-3">
+                                <label asp-for="Country" class="form-label"></label>
+                                <input asp-for="Country" class="form-control" />
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="PhoneNumber" class="form-label"></label>
+                                <input asp-for="PhoneNumber" class="form-control" />
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100 checkout-submit-btn">
+                            <i class="fas fa-lock me-1"></i> Place Order — $@Model.TotalAmount.ToString("F2")
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Cart Summary -->
-    <div class="col-md-5">
-        <div class="card">
-            <div class="card-header"><strong>Order Summary</strong></div>
-            <div class="card-body">
-                @if (Model.Cart is not null)
-                {
-                    @foreach (var item in Model.Cart.CartItems)
+        <!-- Order Summary -->
+        <div class="checkout-summary-col">
+            <div class="card checkout-summary-sticky">
+                <div class="card-header"><strong>Order Summary</strong></div>
+                <div class="card-body">
+                    @if (Model.Cart is not null)
                     {
-                        <div class="d-flex justify-content-between mb-1">
-                            <span>@item.Product?.Name × @item.Quantity</span>
-                            <span>$@item.SubTotal.ToString("F2")</span>
+                        @foreach (var item in Model.Cart.CartItems)
+                        {
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>@item.Product?.Name × @item.Quantity</span>
+                                <span>$@item.SubTotal.ToString("F2")</span>
+                            </div>
+                        }
+                        <hr />
+                        <div class="d-flex justify-content-between fw-bold">
+                            <span>Total</span>
+                            <span class="text-success">$@Model.Cart.TotalPrice.ToString("F2")</span>
                         </div>
                     }
-                    <hr />
-                    <div class="d-flex justify-content-between fw-bold">
-                        <span>Total</span>
-                        <span class="text-success">$@Model.Cart.TotalPrice.ToString("F2")</span>
-                    </div>
-                }
+                </div>
             </div>
         </div>
     </div>

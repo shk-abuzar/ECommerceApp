@@ -967,3 +967,110 @@ main {
         grid-template-columns: 1fr;
     }
 }
+
+/* ── Checkout Page ────────────────────────────────────────── */
+.checkout-page {
+    max-width: 980px;
+    margin: 0 auto;
+}
+
+.checkout-title {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    margin-bottom: 28px;
+}
+
+/* Desktop: side-by-side two-column layout */
+.checkout-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 28px;
+    align-items: start;
+}
+
+.checkout-form-col {
+    min-width: 0; /* prevent overflow in grid */
+}
+
+.checkout-summary-col {
+    min-width: 0;
+}
+
+/* Sticky order summary on desktop */
+.checkout-summary-sticky {
+    position: sticky;
+    top: 116px; /* header height + announcement bar */
+}
+
+/* Two-column row inside the form */
+.checkout-row-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+    .checkout-row-2col .mb-3 {
+        margin-bottom: 0;
+    }
+
+.checkout-submit-btn {
+    padding: 14px 20px;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    margin-top: 8px;
+}
+
+/* Medium screens: tablets / small laptops (769px – 1024px) */
+@media (max-width: 1024px) {
+    .checkout-grid {
+        grid-template-columns: 1fr 320px;
+        gap: 20px;
+    }
+}
+
+/* Mobile: stack columns vertically */
+@media (max-width: 768px) {
+    .checkout-page {
+        max-width: 100%;
+    }
+
+    .checkout-title {
+        font-size: 18px;
+        margin-bottom: 20px;
+    }
+
+    .checkout-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    /* On mobile: summary comes AFTER form */
+    .checkout-form-col {
+        order: 1;
+    }
+
+    .checkout-summary-col {
+        order: 2;
+    }
+
+    .checkout-summary-sticky {
+        position: static; /* no sticky on mobile */
+    }
+
+    .checkout-row-2col {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .checkout-submit-btn {
+        padding: 13px;
+    }
+}
+
+/* Very small phones: stack the 2-col row too */
+@media (max-width: 420px) {
+    .checkout-row-2col {
+        grid-template-columns: 1fr;
+    }
+}
