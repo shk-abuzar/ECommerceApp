@@ -105,29 +105,50 @@ public class CartService : ICartService
 
     public async Task MergeGuestCartAsync(string sessionId, string userId)
     {
+        // Load guest cart
         var guestCart = await _db.Carts
             .Include(c => c.CartItems)
             .FirstOrDefaultAsync(c => c.SessionId == sessionId);
 
-        if (guestCart is null) return;
+        if (guestCart is null || !guestCart.CartItems.Any()) return;
 
-        var userCart = await GetOrCreateCartAsync(userId, null);
+        // Load or create user cart — always include CartItems
+        var userCart = await _db.Carts
+            .Include(c => c.CartItems)
+            .FirstOrDefaultAsync(c => c.UserId == userId);
 
+        if (userCart is null)
+        {
+            userCart = new Cart { UserId = userId, SessionId = null };
+            _db.Carts.Add(userCart);
+            await _db.SaveChangesAsync();
+        }
+
+        // Merge items
         foreach (var item in guestCart.CartItems)
         {
             var existing = userCart.CartItems.FirstOrDefault(ci => ci.ProductId == item.ProductId);
             if (existing is not null)
+            {
                 existing.Quantity += item.Quantity;
+            }
             else
+            {
                 userCart.CartItems.Add(new CartItem
                 {
+                    CartId = userCart.Id,
                     ProductId = item.ProductId,
                     Quantity = item.Quantity,
                     UnitPrice = item.UnitPrice
                 });
+            }
         }
 
+        // Delete guest cart completely
+        _db.CartItems.RemoveRange(guestCart.CartItems);
         _db.Carts.Remove(guestCart);
+
+        userCart.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
     }
 

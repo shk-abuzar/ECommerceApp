@@ -78,32 +78,34 @@ app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// ─── FIX #06: Merge guest cart on login ──────────────────────────────────────
+// ── Merge guest cart into user cart on first request after login ─────────────
 app.Use(async (context, next) =>
 {
     const string cartSessionKey = "CartSessionId";
     const string mergedKey = "CartMerged";
 
     var user = context.User;
+
     if (user.Identity?.IsAuthenticated == true
         && context.Session.GetString(mergedKey) == null)
     {
+        var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         var sessionCartId = context.Session.GetString(cartSessionKey);
-        if (!string.IsNullOrEmpty(sessionCartId))
+
+        // Only merge if there IS a guest cart session and a valid userId
+        if (!string.IsNullOrEmpty(userId) && !string.IsNullOrEmpty(sessionCartId))
         {
-            var cartService = context.RequestServices.GetRequiredService<ICartService>();
-            var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (!string.IsNullOrEmpty(userId))
+            try
             {
-                try
-                {
-                    await cartService.MergeGuestCartAsync(sessionCartId, userId);
-                    context.Session.Remove(cartSessionKey);          // guest cart session cleared
-                    context.Session.SetString(mergedKey, "1");       // don't merge again this session
-                }
-                catch { /* fail silently — don't break the request */ }
+                var cartService = context.RequestServices.GetRequiredService<ICartService>();
+                await cartService.MergeGuestCartAsync(sessionCartId, userId);
             }
+            catch { /* fail silently */ }
         }
+
+        // Mark merged regardless — so we don't try again this session
+        context.Session.Remove(cartSessionKey);
+        context.Session.SetString(mergedKey, "1");
     }
 
     await next();
