@@ -66,10 +66,20 @@ public class ProductService : IProductService
 
     public async Task DeleteAsync(int id)
     {
-        var product = await _db.Products.FindAsync(id);
+        var product = await _db.Products
+            .Include(p => p.OrderItems)
+            .FirstOrDefaultAsync(p => p.Id == id);
         if (product is not null)
         {
-            product.IsActive = false;
+            if (product.OrderItems.Any())
+            {
+                // Product has orders — just hide it instead of deleting
+                product.IsActive = false;
+            }
+            else
+            {
+                _db.Products.Remove(product);
+            }
             await _db.SaveChangesAsync();
         }
     }
