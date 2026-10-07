@@ -7,9 +7,12 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // ─── Database ────────────────────────────────────────────────────────────────
-var rawConnectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? builder.Configuration["DATABASE_URL"]
-    ?? Environment.GetEnvironmentVariable("DATABASE_URL");
+var defaultConn = builder.Configuration.GetConnectionString("DefaultConnection");
+var envDbUrl = Environment.GetEnvironmentVariable("DATABASE_URL")
+    ?? Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+    ?? builder.Configuration["DATABASE_URL"];
+
+var rawConnectionString = !string.IsNullOrWhiteSpace(defaultConn) ? defaultConn : envDbUrl;
 
 string? connectionString = rawConnectionString;
 if (!string.IsNullOrWhiteSpace(rawConnectionString) &&
@@ -31,6 +34,12 @@ if (!string.IsNullOrWhiteSpace(rawConnectionString) &&
     {
         connectionString = rawConnectionString;
     }
+}
+
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    throw new InvalidOperationException(
+        "CRITICAL: No database connection string found! Please configure DATABASE_URL or ConnectionStrings:DefaultConnection.");
 }
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
