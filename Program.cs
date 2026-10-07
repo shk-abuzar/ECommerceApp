@@ -7,8 +7,34 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // ─── Database ────────────────────────────────────────────────────────────────
+var rawConnectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? builder.Configuration["DATABASE_URL"]
+    ?? Environment.GetEnvironmentVariable("DATABASE_URL");
+
+string? connectionString = rawConnectionString;
+if (!string.IsNullOrWhiteSpace(rawConnectionString) &&
+    (rawConnectionString.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) ||
+     rawConnectionString.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase)))
+{
+    try
+    {
+        var uri = new Uri(rawConnectionString);
+        var userInfo = uri.UserInfo.Split(':');
+        var username = Uri.UnescapeDataString(userInfo[0]);
+        var password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "";
+        var host = uri.Host;
+        var port = uri.Port > 0 ? uri.Port : 5432;
+        var database = uri.AbsolutePath.TrimStart('/');
+        connectionString = $"Host={host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true;";
+    }
+    catch
+    {
+        connectionString = rawConnectionString;
+    }
+}
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(connectionString));
 
 // ─── Identity ────────────────────────────────────────────────────────────────
 builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
